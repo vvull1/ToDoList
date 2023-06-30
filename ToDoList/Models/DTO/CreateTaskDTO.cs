@@ -1,22 +1,21 @@
 ﻿namespace ToDoList.Models.DTO
 {
-    public class AdminCreateTaskDTO
-    {
-        public AdminCreateTaskDTO()
-        {
-            Tasks= new List<TaskDTO>();    
-        }
+    //public class AdminCreateTaskDTO
+    //{
+    //    public AdminCreateTaskDTO()
+    //    {
+    //        Tasks= new List<TaskDTO>();    
+    //    }
 
-        public List<TaskDTO> Tasks { get; set; }
-    }
+    //    public List<TaskDTO> Tasks { get; set; }
+    //}
 
-    public class TaskDTO
+    public class AdminTaskDTO
     {
         public string TaskName { get; set; }
         public StatusType TaskStatus { get; set; }
-        public int? CreatedBy { get; set; }
         public int? AssignedTo { get; set; }
-        public DateTime DueTime { get; set; }
+        public string DueTime { get; set; }
     }
 
     public class CreateTaskDTO
@@ -32,7 +31,7 @@
     public class UserTaskDTO 
     {
         public string TaskName { get; set; }
-        public DateTime DueTime { get; set; }
+        public string DueTime { get; set; }
         public StatusType TaskStatus { get; set; }
     }
 }

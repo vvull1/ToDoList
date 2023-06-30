@@ -9,7 +9,9 @@ using ToDoList.Services;
 namespace ToDoList.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize]
     [ApiController]
+    
     
     public class MessagesController : ControllerBase
     {
@@ -24,16 +26,17 @@ namespace ToDoList.Controllers
 
         [HttpPost]
         [Route("SendMessage")]
-        public async Task<string> SendMessage([FromBody] SendMessageModel request)
+        public async Task SendMessage([FromBody] SendMessageModel request)
         {
             try
             {
-                var res = await _messageSender.SendMessage(request);
-                return res;
+                //var res = await _messageSender.SendMessage(request);
+                //return res;
+                await _messageSender.SendMessage(request);
             }
             catch(Exception ex)
             {
-                return await _exceptionLoggerService.ExpectionLogger("SendMessage", "MessagesController", ex.Message);
+                await _exceptionLoggerService.ExpectionLogger("SendMessage", "MessagesController", ex.Message);
             }
            
         }

@@ -36,6 +36,9 @@ namespace ToDoList.Migrations
                     b.Property<DateTime>("CreatedDateTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Service")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
@@ -68,7 +71,7 @@ namespace ToDoList.Migrations
 
                     b.HasKey("LoggerId");
 
-                    b.ToTable("LoggerTable");
+                    b.ToTable("Logger");
                 });
 
             modelBuilder.Entity("ToDoList.Models.Messaging", b =>
@@ -86,14 +89,21 @@ namespace ToDoList.Migrations
                     b.Property<int>("FKSenderId")
                         .HasColumnType("int");
 
-                    b.Property<Guid>("MsgUniqueId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<bool>("IsParent")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("ParentID")
+                        .HasColumnType("int");
 
                     b.Property<int>("ReceiverId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("SendDateTime")
+                    b.Property<DateTime>("SentTime")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("MessageId");
 
@@ -136,13 +146,13 @@ namespace ToDoList.Migrations
                     b.Property<DateTime>("AssignedDateTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("FKTaskAssignedByUserId")
+                    b.Property<int?>("FKTaskAssignedByUserId")
                         .HasColumnType("int");
 
                     b.Property<int>("FKTaskId")
                         .HasColumnType("int");
 
-                    b.Property<int>("TaskAssignedToUserId")
+                    b.Property<int?>("TaskAssignedToUserId")
                         .HasColumnType("int");
 
                     b.HasKey("TaskHistoryId");
@@ -246,9 +256,7 @@ namespace ToDoList.Migrations
                 {
                     b.HasOne("ToDoList.Models.User", "User")
                         .WithMany("TaskHistory")
-                        .HasForeignKey("FKTaskAssignedByUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("FKTaskAssignedByUserId");
 
                     b.HasOne("ToDoList.Models.TaskTable", "TaskTable")
                         .WithMany("TaskHistorys")

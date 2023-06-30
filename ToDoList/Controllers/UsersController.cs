@@ -10,7 +10,9 @@ namespace ToDoList.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     
+
     public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -30,13 +32,14 @@ namespace ToDoList.Controllers
         {
             try
             {
+                throw new Exception("While creating user");
                 var result = await _userService.CreateUser(userObj);
                 return result;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                await _exceptionLoggerService.ExpectionLogger("CreatedUser", "UsersController", ex.Message);
+               // await _exceptionLoggerService.ExpectionLogger("CreatedUser", "UsersController", ex.Message); //here it's hitting middleware also
                 return null;
             }
 
@@ -47,13 +50,14 @@ namespace ToDoList.Controllers
         {
             try
             {
+                //throw new Exception("Error getting getallusers");
                 var result = await _userService.GetAllUsers();
 
                 return result;
             }
             catch (Exception ex)
             {
-                await _exceptionLoggerService.ExpectionLogger("GetAllUsers", "UsersController", ex.Message);
+                await _exceptionLoggerService.ExpectionLogger("GetAllUsers", "UsersController", ex.Message);  //here its hitting only service class
                 return null;
             }
 
@@ -64,27 +68,29 @@ namespace ToDoList.Controllers
         {
             try
             {
+             //   throw new Exception("Error while updating users");
                 var result = await _userService.UpdateUser(id, updatedUserObj);
                 return result;
             }
             catch (Exception ex)
             {
-                await _exceptionLoggerService.ExpectionLogger("UpdateUser", "UsersController", ex.Message);
+                await _exceptionLoggerService.ExpectionLogger("UpdateUser", "UsersController", ex.Message);   //here it's hitting both service and middleware
                 return null;
             }
 
         }
 
-        [HttpGet("GetUserById/{id}")]
+        [HttpGet("UserBy/{id}")]
         public async Task<UserDTO> GetUserById(int id)
         {
             try
             {
+                //throw new Exception("Error getting when get user by id");
                 return await _userService.GetUserById(id);
             }
             catch (Exception ex)
             {
-                await _exceptionLoggerService.ExpectionLogger("GetUserById", "UsersController", ex.Message);
+                await _exceptionLoggerService.ExpectionLogger("GetUserById", "UsersController", ex.Message);  //here it's hitting only service class
                 return null;
             }
 

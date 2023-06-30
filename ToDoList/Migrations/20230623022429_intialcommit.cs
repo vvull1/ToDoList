@@ -6,19 +6,21 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ToDoList.Migrations
 {
     /// <inheritdoc />
-    public partial class Messages : Migration
+    public partial class intialcommit : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "LoggerTable",
+                name: "Logger",
                 columns: table => new
                 {
                     LoggerId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Exception = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedTime = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Service = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Controller = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedTime = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -89,11 +91,13 @@ namespace ToDoList.Migrations
                 {
                     MessageId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    MsgUniqueId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Subject = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ParentID = table.Column<int>(type: "int", nullable: true),
+                    IsParent = table.Column<bool>(type: "bit", nullable: false),
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     FKSenderId = table.Column<int>(type: "int", nullable: false),
                     ReceiverId = table.Column<int>(type: "int", nullable: false),
-                    SendAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    SentTime = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -134,24 +138,23 @@ namespace ToDoList.Migrations
                 {
                     TaskHistoryId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    FKTaskId = table.Column<int>(type: "int", nullable: false),
-                    TaskTableTaskId = table.Column<int>(type: "int", nullable: true),
-                    FKTaskAssignedByUserId = table.Column<int>(type: "int", nullable: false),
-                    UserId = table.Column<int>(type: "int", nullable: true),
-                    TaskAssignedToUserId = table.Column<int>(type: "int", nullable: false),
-                    UpdatedDateTime = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    FKTaskAssignedByUserId = table.Column<int>(type: "int", nullable: true),
+                    TaskAssignedToUserId = table.Column<int>(type: "int", nullable: true),
+                    AssignedDateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    FKTaskId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_TaskHistory", x => x.TaskHistoryId);
                     table.ForeignKey(
-                        name: "FK_TaskHistory_Task_TaskTableTaskId",
-                        column: x => x.TaskTableTaskId,
+                        name: "FK_TaskHistory_Task_FKTaskId",
+                        column: x => x.FKTaskId,
                         principalTable: "Task",
-                        principalColumn: "TaskId");
+                        principalColumn: "TaskId",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_TaskHistory_User_UserId",
-                        column: x => x.UserId,
+                        name: "FK_TaskHistory_User_FKTaskAssignedByUserId",
+                        column: x => x.FKTaskAssignedByUserId,
                         principalTable: "User",
                         principalColumn: "UserId");
                 });
@@ -172,14 +175,14 @@ namespace ToDoList.Migrations
                 column: "FKCreatedByUserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TaskHistory_TaskTableTaskId",
+                name: "IX_TaskHistory_FKTaskAssignedByUserId",
                 table: "TaskHistory",
-                column: "TaskTableTaskId");
+                column: "FKTaskAssignedByUserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TaskHistory_UserId",
+                name: "IX_TaskHistory_FKTaskId",
                 table: "TaskHistory",
-                column: "UserId");
+                column: "FKTaskId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_User_FKRoleId",
@@ -194,7 +197,7 @@ namespace ToDoList.Migrations
                 name: "ActivityLogger");
 
             migrationBuilder.DropTable(
-                name: "LoggerTable");
+                name: "Logger");
 
             migrationBuilder.DropTable(
                 name: "Messaging");

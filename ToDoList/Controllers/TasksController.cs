@@ -8,7 +8,9 @@ using ToDoList.Services;
 namespace ToDoList.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize]
     [ApiController]
+
     public class TasksController : ControllerBase
     {
         private readonly ITaskService _taskService;
@@ -22,7 +24,7 @@ namespace ToDoList.Controllers
 
         [HttpPost]
         [Route("AdminCreateTask")]
-        public async Task<IActionResult> CreateTask(AdminCreateTaskDTO createTask)
+        public async Task<IActionResult> CreateTask(AdminTaskDTO createTask)
         {
             try
             {
@@ -38,7 +40,7 @@ namespace ToDoList.Controllers
         }
 
         [HttpGet]
-        [Route("GetTaskListByUserId")]
+        [Route("TaskListByUserId")]
         public async Task<List<TaskListDTO>> GetTaskListByUserId(int userId)
         {
             try
@@ -53,7 +55,7 @@ namespace ToDoList.Controllers
         }
 
         [HttpGet]
-        [Route("GetAllTasks")]
+        [Route("AllTasks")]
         public async Task<List<TaskTable>> GetAllTasks(StatusType taskStatus, int taskid)
         {
             try

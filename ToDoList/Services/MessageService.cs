@@ -17,30 +17,61 @@ namespace ToDoList.Services
             _logger = logger;
         }
 
-        public async Task<string> SendMessage([FromBody]SendMessageModel request)
+        public async Task SendMessage([FromBody]SendMessageModel request)
         {
             var sender = await _context.Users.FindAsync(request.SenderId);
             var receiver = await _context.Users.FindAsync(request.ReceiverId);
 
             if (sender == null || receiver == null)
             {
-                return "Sender or Receiver Not Found";
+                return;
             }
             
+            var msgfromto = await _context.Messagings.Where(x=> x.FKSenderId== request.SenderId && x.ReceiverId == request.ReceiverId).OrderBy(x=>x.SentTime).ToListAsync();
+            var msgtofrom = await _context.Messagings.Where(x=> x.FKSenderId== request.ReceiverId && x.ReceiverId == request.SenderId).OrderBy(x => x.SentTime).ToListAsync();
 
-            var message = new Messaging 
-            { 
-                Content  = request.Content,
-                FKSenderId= sender.UserId, 
-                ReceiverId= receiver.UserId,
-                SendAt = DateTime.UtcNow,
-                MsgUniqueId = Guid.NewGuid(),   
-            };
+            if ((msgfromto ==null && msgtofrom ==null) || (msgfromto.Count == 0 && msgtofrom.Count == 0)) 
+            {
 
-            _context.Messagings.Add(message);   
+                var message1 = new Messaging
+                {
+                    Content = request.Content,
+                    FKSenderId = sender.UserId,
+                    ReceiverId = receiver.UserId,
+                    Subject= request.Subject,
+                    SentTime = DateTime.UtcNow,
+                    IsParent = true
+
+                };
+                _context.Messagings.Add(message1);
+
+            }
+            else
+            {
+                var final = new List<Messaging>();
+                final.AddRange(msgfromto); //addRange contains elements from both the list
+                final.AddRange(msgtofrom);
+                //final = (List<Messaging>)final.OrderBy(x => x.SentTime);
+                var parentid = final.Where(x => x.IsParent).FirstOrDefault().MessageId;
+                //It retrieves the parent message Id
+                var message2 = new Messaging
+                {
+                    Content = final[final.Count-1].Content + " ~ " +request.Content,
+                    FKSenderId = sender.UserId,
+                    ReceiverId = receiver.UserId,
+                    SentTime = DateTime.UtcNow,
+                    IsParent = false,
+                    ParentID= parentid,
+                    Subject = request.Subject,  
+                    
+                };
+                _context.Messagings.Add(message2);
+
+            }
+
             await _context.SaveChangesAsync();
 
-            return message.MsgUniqueId.ToString();
+            return;
         }
         public async Task<List<Messaging>> GetMessages(int userId)
         {
@@ -62,7 +93,7 @@ namespace ToDoList.Services
         {
             return await _context.Messagings
                 .Where(x => x.FKSenderId == userId || x.ReceiverId == userId)
-                .OrderByDescending(x => x.SendAt)
+                .OrderByDescending(x => x.SentTime)
                 .ToListAsync();
         }
 

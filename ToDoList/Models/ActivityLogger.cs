@@ -16,13 +16,12 @@ namespace ToDoList.Models
         public int ActivityLoggerId { get; set; }
 
         public string? ActivityPerformed { get; set; }
+        public string? Service { get; set; }
 
         public DateTime CreatedDateTime { get; set; }
 
         [ForeignKey("User")]
         public int UserId { get; set; }
         public User? User { get; set; }
-
-
     }
 }

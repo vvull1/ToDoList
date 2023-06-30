@@ -12,6 +12,18 @@ using ToDoList.Models.Utility;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(MyAllowSpecificOrigins,
+                          policy =>
+                          {
+                              policy.WithOrigins("http://localhost:4200")
+                                                  .AllowAnyHeader()
+                                                  .AllowAnyMethod();
+                          });
+});
 
 builder.Services.AddDbContext<ToDoContext>(options =>
 {
@@ -46,7 +58,7 @@ builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IExceptionLoggerService, ExceptionLoggerService>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
-//builder.Services.AddTransient<CliamService>();
+builder.Services.AddScoped<CliamService>();
 
 
 
@@ -56,6 +68,7 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
@@ -68,15 +81,13 @@ if (app.Environment.IsDevelopment())
     //app.ConfigureExceptionHandler(logger);
     
 }
-app.UseCors(x => x
-            .AllowAnyOrigin()
-            .AllowAnyMethod()
-            .AllowAnyHeader());
+app.UseCors(MyAllowSpecificOrigins);
 
 app.UseHttpsRedirection();
 app.UseAuthentication();    
 app.UseAuthorization();
-
+//Custom middleware exception logger;
+app.UseLogException();
 app.MapControllers();
 
 app.Run();

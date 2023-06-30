@@ -21,10 +21,21 @@ namespace ToDoList.Controllers
 
         [HttpPost]
         [Route("UserCreateTask")]
-        public async Task<IActionResult> CreateTask(CreateTaskDTO createTask)
+        [Authorize]
+        public async Task<IActionResult> CreateTask(UserTaskDTO createTask)
         {
-            var result = await _userCreateTaskService.CreateTask(createTask);
-            return result;
+            try
+            {
+                throw new Exception("Error while creating user task");
+                var result = await _userCreateTaskService.CreateTask(createTask);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                await _exceptionLoggerService.ExpectionLogger("CreateTask", "UserTaskController", ex.Message);  //Here it getting both executed
+                return null;
+            }
+
         }
     }
 }

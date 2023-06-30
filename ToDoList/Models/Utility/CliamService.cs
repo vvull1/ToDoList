@@ -14,5 +14,7 @@ namespace ToDoList.Models.Utility
             int.TryParse(res, out int userId);
             return userId;
         }
+
+        public string GetCurrentRole()=> _httpContextAccessor?.HttpContext?.User?.Claims?.FirstOrDefault(x=>x.Type == ClaimTypes.Role)?.Value ?? string.Empty;
     }
 }

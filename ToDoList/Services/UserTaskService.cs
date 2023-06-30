@@ -4,36 +4,37 @@ using ToDoList.Models.DTO;
 using ToDoList.Models;
 using ToDoList.EfCore;
 using ToDoList.Models.Utility;
+using System.Globalization;
 
 namespace ToDoList.Services
 {
     public class UserTaskService:IUserTaskService
     {
         private readonly ToDoContext _context;
-       
         private readonly ILogger<UserTaskService> _logger;
+        private readonly CliamService _claimService;
 
-        public UserTaskService(ToDoContext context, ILogger<UserTaskService> logger)
+        public UserTaskService(ToDoContext context, ILogger<UserTaskService> logger, CliamService claimService)
         {
             _context = context;
             _logger = logger;
+            _claimService = claimService;
         }
-        public async Task<IActionResult> CreateTask(CreateTaskDTO createTask)
+        public async Task<IActionResult> CreateTask(UserTaskDTO createTask)
         {
             try
             {
-                foreach (var item in createTask.Tasks)
-                {
-                    var taskList = new TaskTable();
+                var userId = _claimService.GetCurrentUserId(); // Get the current user's ID
 
-                    taskList.TaskName = item.TaskName;
-                    taskList.DueDateTime = item.DueTime;
-                    taskList.Status =item.TaskStatus;
-                    taskList.FKCreatedByUserId = 3;
-                    taskList.AssignedToUserId = 3;
+                var taskList = new TaskTable();
+
+                    taskList.TaskName = createTask.TaskName;
+                    taskList.DueDateTime = DateTime.ParseExact(createTask.DueTime,"MM-dd-yyyy",CultureInfo.InvariantCulture);
+                    taskList.Status = createTask.TaskStatus;
+                    taskList.FKCreatedByUserId = userId;
+                    taskList.AssignedToUserId = userId;
 
                     _context.Tasks.Add(taskList);
-                }
                 //throw new Exception("Custom exception message");
 
                 await _context.SaveChangesAsync();

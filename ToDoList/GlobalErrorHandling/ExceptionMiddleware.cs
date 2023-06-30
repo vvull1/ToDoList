@@ -1,37 +1,54 @@
 ﻿using Microsoft.AspNetCore.Diagnostics;
 using System.Net;
 using ToDoList.Models.DTO;
+using ToDoList.Models.Utility;
+using ToDoList.Services;
 
 namespace ToDoList.GlobalErrorHandling
 {
-    public static class ExceptionMiddleware
+    public class ExceptionMiddleware
     {
-        //public static void ConfigureExceptionHandler(this IApplicationBuilder app, ILogger<ExceptionHandlerMiddleware> logger)
-        //{
-        //    logger.LogInformation("Configuring Exception Handler middleware");
-        //    app.UseExceptionHandler(errorApp =>
-        //    {
-        //        errorApp.Run(async context =>
-        //        {
-        //            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-        //            context.Response.ContentType = "application/json";
+        RequestDelegate _requestDelegate;
 
-        //            var contextFeature = context.Features.Get<IExceptionHandlerFeature>();
-        //            if (contextFeature != null)
-        //            {
-        //                logger.LogError($"Something went wrong: {contextFeature.Error}");
+        public ExceptionMiddleware(RequestDelegate requestDelegate)
+        {
+            _requestDelegate = requestDelegate;
+        }
 
-        //                await context.Response.WriteAsync(new GlobalErrorDTO()
-        //                {
-        //                    StatusCode = context.Response.StatusCode,
-        //                    Message = "Internal Server Error."
-        //                }.ToString());
-        //            }
-        //        });
-        //    });
+        public async Task InvokeAsync(HttpContext context, IExceptionLoggerService exceptionLoggerService)
+        {
+            var controllerName = context.GetRouteData()?.Values["controller"]?.ToString() ?? string.Empty;
+            var actionName = context.GetRouteData()?.Values["action"]?.ToString() ?? string.Empty;
 
-        //}
+            try
+            {
 
-        
+                //await exceptionLoggerService.ActivityLogger(actionName, controllerName);
+
+                await _requestDelegate(context);
+            }
+            catch (Exception ex)
+            {
+
+                //context
+                string requestInfo = string.Empty;
+                if (context.Request.Body?.CanRead ?? false && (!context.Request.Path.ToString().Contains("/api/AuthenticationAPI/UserLogin", StringComparison.OrdinalIgnoreCase) && !context.Request.Path.ToString().Contains("/api/AuthenticationAPI/UserLogin", StringComparison.OrdinalIgnoreCase)))
+                {
+                    using StreamReader streamReader = new StreamReader(context.Request.Body);
+                    requestInfo = await streamReader.ReadToEndAsync();
+                }
+
+                await exceptionLoggerService.ExpectionLogger(actionName, controllerName, ex.Message);
+
+            }
+        }
+    }
+
+    public static class LogExceptionExtension
+    {
+        public static IApplicationBuilder UseLogException(this IApplicationBuilder app)
+        {
+            return app.UseMiddleware<ExceptionMiddleware>();
+        }
     }
 }

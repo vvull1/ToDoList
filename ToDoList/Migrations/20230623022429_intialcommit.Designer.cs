@@ -12,8 +12,8 @@ using ToDoList.EfCore;
 namespace ToDoList.Migrations
 {
     [DbContext(typeof(ToDoContext))]
-    [Migration("20230604211352_UpdatingRoleFK")]
-    partial class UpdatingRoleFK
+    [Migration("20230623022429_intialcommit")]
+    partial class intialcommit
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -57,15 +57,21 @@ namespace ToDoList.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LoggerId"));
 
-                    b.Property<DateTime>("CreatedTime")
+                    b.Property<string>("Controller")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("CreatedTime")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Exception")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Service")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("LoggerId");
 
-                    b.ToTable("LoggerTable");
+                    b.ToTable("Logger");
                 });
 
             modelBuilder.Entity("ToDoList.Models.Messaging", b =>
@@ -83,14 +89,21 @@ namespace ToDoList.Migrations
                     b.Property<int>("FKSenderId")
                         .HasColumnType("int");
 
-                    b.Property<Guid>("MsgUniqueId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<bool>("IsParent")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("ParentID")
+                        .HasColumnType("int");
 
                     b.Property<int>("ReceiverId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("SendDateTime")
+                    b.Property<DateTime>("SentTime")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("MessageId");
 
@@ -130,29 +143,23 @@ namespace ToDoList.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TaskHistoryId"));
 
-                    b.Property<int>("FKTaskAssignedByUserId")
+                    b.Property<DateTime>("AssignedDateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("FKTaskAssignedByUserId")
                         .HasColumnType("int");
 
                     b.Property<int>("FKTaskId")
                         .HasColumnType("int");
 
-                    b.Property<int>("TaskAssignedToUserId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("TaskTableTaskId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedDateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("UserId")
+                    b.Property<int?>("TaskAssignedToUserId")
                         .HasColumnType("int");
 
                     b.HasKey("TaskHistoryId");
 
-                    b.HasIndex("TaskTableTaskId");
+                    b.HasIndex("FKTaskAssignedByUserId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("FKTaskId");
 
                     b.ToTable("TaskHistory");
                 });
@@ -247,13 +254,15 @@ namespace ToDoList.Migrations
 
             modelBuilder.Entity("ToDoList.Models.TaskHistory", b =>
                 {
-                    b.HasOne("ToDoList.Models.TaskTable", "TaskTable")
-                        .WithMany("TaskHistorys")
-                        .HasForeignKey("TaskTableTaskId");
-
                     b.HasOne("ToDoList.Models.User", "User")
                         .WithMany("TaskHistory")
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("FKTaskAssignedByUserId");
+
+                    b.HasOne("ToDoList.Models.TaskTable", "TaskTable")
+                        .WithMany("TaskHistorys")
+                        .HasForeignKey("FKTaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("TaskTable");
 
